@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Tic Tac Toe</title>
+    <style>
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 300px;
+            margin: 20px auto;
+            border: 2px solid black;
+            padding: 10px;
+            background-color: lightgray;
+        }
+
+        button {
+            width: 100%;
+            height: 100px;
+            font-size: 2em;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button.red {
+            background-color: red;
+            color: white;
+        }
+
+        button.white {
+            background-color: white;
+        }
+
+        #info {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+    <!-- Do not use this in production -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <h1>React Tic Tac Toe</h1>
+    <!-- We will put our React component inside this div -->
+    <div id="root"></div>
+
+    <!-- Load React -->
+    <script src="https://unpkg.com/react/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Load your React component -->
+    <script type="text/babel">
+        const Board = () => {
+            const [player, setPlayer] = React.useState(1);
+            const [gameState, setGameState] = React.useState([]);
+            let status = `Winner is ${checkForWinner(gameState)}`;
+
+            let playerTurn = `Next Player: ${player === 0 ? 'Player O' : 'Player X'}`;
+
+            console.log(`We have a winner: ${status}`);
+
+            const takeTurn = (id) => {
+                setGameState([...gameState, { id: id, player: player }]);
+                setPlayer((player + 1) % 2);
+                return player;
+            };
+
+            function renderSquare(i) {
+                return <Square takeTurn={takeTurn} id={i} key={i}></Square>;
+            }
+
+            return (
+                <div>
+                    <div className="game-board">
+                        {Array(9).fill(null).map((_, i) => renderSquare(i))}
+                    </div>
+                    <div id="info">
+                        <h1 id="turn">{playerTurn}</h1>
+                        <h1>{status}</h1>
+                    </div>
+                </div>
+            );
+        };
+
+        const Square = ({ takeTurn, id }) => {
+            const mark = ['O', 'X', '+'];
+            const [filled, setFilled] = React.useState(false);
+            const [tik, setTik] = React.useState(2);
+
+            return (
+                <button
+                    className={tik === 1 ? 'red' : 'white'}
+                    onClick={() => {
+                        if (!filled) {
+                            setTik(takeTurn(id));
+                            setFilled(true);
+                            console.log(`Square: ${id} filled by player : ${tik}`);
+                        }
+                    }}
+                >
+                    <h1>{mark[tik]}</h1>
+                </button>
+            );
+        };
+
+        const Game = () => {
+            return (
+                <div className="game">
+                    <Board />
+                </div>
+            );
+        };
+
+        const win = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+
+        const checkForWinner = (gameState) => {
+            if (gameState.length < 5) return 'No Winner Yet';
+            let p0 = gameState.filter((item) => item.player === 0).map((item) => item.id);
+            let px = gameState.filter((item) => item.player === 1).map((item) => item.id);
+
+            if (p0 && px) {
+                const win0 = win.filter((item) => isSuperset(new Set(p0), new Set(item)));
+                const winX = win.filter((item) => isSuperset(new Set(px), new Set(item)));
+                if (win0.length > 0) return 'Player O';
+                if (winX.length > 0) return 'Player X';
+            }
+            return 'No Winner Yet';
+        };
+
+        function isSuperset(set, subset) {
+            for (let elem of subset) {
+                if (!set.has(elem)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        ReactDOM.render(<Game />, document.getElementById('root'));
+    </script>
+</body>
+</html>
